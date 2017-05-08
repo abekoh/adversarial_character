@@ -1,0 +1,4 @@
+*.hdf5
+*.pyc
+output/
+__pycache__/

@@ -22,7 +22,7 @@ class Toolbox(base.Toolbox):
     def _load_img_as_np(self, path):
         img_pil = Image.open(path)
         img_np = np.asarray(img_pil)
-        # img_np.flags.writeable = True
+        img_np.flags.writeable = True
         return img_np
 
     def _eval_char(self, individual):
@@ -51,42 +51,56 @@ def make_adversarial_char():
     if not os.path.exists('./output/temp'):
         os.mkdir('./output/temp')
 
-    pop = toolbox.population(n=30)
+    if not os.path.exists('./output/best'):
+        os.mkdir('./output/best')
 
+    # 初期集団を生成
+    pop = toolbox.population(n=300)
     CXPB, MUTPB, NGEN = 0.5, 0.2, 1000
 
+    # 初期集団の個体を評価
     fitnesses = list(map(toolbox.evaluate, pop))
     for ind, fit in zip(pop, fitnesses):
-        ind.fitness.value = fit
+        ind.fitness.values = fit
 
     for g in range(NGEN):
         print ('{0}世代'.format(g))
 
+        # 選択
         offspring = toolbox.select(pop, len(pop))
         offspring = list(map(toolbox.clone, offspring))
 
+        # 交叉
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < CXPB:
                 toolbox.mate(child1, child2)
                 del child1.fitness.values
                 del child2.fitness.values
 
+        # 変異
         for mutant in offspring:
             if random.random() < MUTPB:
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
 
+        # 適合度が計算されていない個体を集めて適合度を計算
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
         fitnesses = map(toolbox.evaluate, invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
 
+        # 次世代群をoffspringにする
         pop[:] = offspring
 
+        # すべての適合度を配列にする
         fits = [ind.fitness.values[0] for ind in pop]
 
         print ('Min: {0:013.10f} %'.format(min(fits) * 100))
         print ('Max: {0:013.10f} %'.format(max(fits) * 100))
+
+        best_ind_np = tools.selBest(pop, 1)[0]
+        best_ind_pil = Image.fromarray(np.uint8(best_ind_np))
+        best_ind_pil.save('./output/best/' + str(g) + '.png', 'PNG')
 
         if max(fits) >= 0.99:
             break

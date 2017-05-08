@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from PIL import Image
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
@@ -40,7 +41,9 @@ class LeNet:
 #     return img
 
 def get_likelihoods(img_np, model):
-    img_cnn = img_np[np.newaxis, np.newaxis, :, :]
+    img_cnn = img_np.copy()
+    img_cnn = img_cnn.astype(np.float32) / 255.0
+    img_cnn = img_cnn[np.newaxis, np.newaxis, :, :]
     pred = model.predict(img_cnn, batch_size=128, verbose=0)
     likelihoods = pred[0]
     return likelihoods

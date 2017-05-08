@@ -39,9 +39,9 @@ class LeNet:
 #     img = img[np.newaxis, np.newaxis, :, :]
 #     return img
 
-def get_likelihoods(img, model):
-    img_np = mat_to_np(mat=img)
-    pred = model.predict(img_np, batch_size=128, verbose=0)
+def get_likelihoods(img_np, model):
+    img_cnn = img_np[np.newaxis, np.newaxis, :, :]
+    pred = model.predict(img_cnn, batch_size=128, verbose=0)
     likelihoods = pred[0]
     return likelihoods
 

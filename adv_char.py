@@ -12,15 +12,14 @@ from deap import creator
 from deap import tools
 import deap_tools as extools
 
-import cnn
+from cnn import LeNet
 
 class Toolbox(base.Toolbox):
-    def __init__(self, src_img_path, src_alph, dst_alph, model_path='./train_weights.hdf5'):
+    def __init__(self, src_img_path, dst_alph, model):
         super(Toolbox, self).__init__()
         self.src_img_path = src_img_path
-        self.src_alph = src_alph
         self.dst_alph = dst_alph
-        self.model_path = model_path
+        self.model = model
         self._set()
 
     def _load_img_as_np(self, path):
@@ -29,12 +28,9 @@ class Toolbox(base.Toolbox):
         img_np.flags.writeable = True
         return img_np
 
-    def eval_char(self, individual, is_src_alph=False):
-        pred = cnn.get_likelihoods(img_np=individual, model=self.model)
+    def eval_char(self, individual):
+        pred = self.model.get_likelihoods(img_np=individual)
         dst_alph_num = ord(self.dst_alph) - 65
-        if is_src_alph:
-            src_alph_num = ord(self.src_alph) - 65
-            return pred[src_alph_num], pred[dst_alph_num]
         return pred[dst_alph_num],
 
     def _set(self):
@@ -43,7 +39,6 @@ class Toolbox(base.Toolbox):
         self.register('attr_img', self._load_img_as_np, self.src_img_path)
         self.register('individual', tools.initIterate, creator.Individual, self.attr_img)
         self.register('population', tools.initRepeat, list, self.individual)
-        self.model = cnn.LeNet.build(width=200, height=200, depth=1, classes=26, weight_path=self.model_path)
         self.register('evaluate', self.eval_char)
         self.register('mate', extools.cxTwoPointImg)
         self.register('mutate', extools.mutFlipBitImg, indpb=0.05)
@@ -51,8 +46,7 @@ class Toolbox(base.Toolbox):
 
 class AdversarialCharacter():
     def __init__(self, src_img_path, src_alph, dst_alph, dst_path,
-                 cxpb, mutpb, ngen, npop, breakacc):
-        self.toolbox = Toolbox(src_img_path=src_img_path, src_alph=src_alph, dst_alph=dst_alph)
+                 cxpb, mutpb, ngen, npop, breakacc, model):
         self.src_alph = src_alph
         self.dst_alph = dst_alph
         self.dst_root_path = dst_path
@@ -63,6 +57,8 @@ class AdversarialCharacter():
         self.npop = npop
         self.breakacc = breakacc
         self.accuracies = []
+        self.model = model
+        self.toolbox = Toolbox(src_img_path=src_img_path, dst_alph=dst_alph, model=model)
         self._make_dst_dir()
 
     def _make_dst_dir(self):
@@ -76,7 +72,7 @@ class AdversarialCharacter():
         img_pil.save(os.path.join(self.dst_best_path, filename), 'PNG')
 
     def _log_accuracies(self, best_ind_np):
-        src_alph_score, dst_alph_score = self.toolbox.eval_char(best_ind_np, True)
+        src_alph_score, dst_alph_score = self.model.eval_char_with_before(best_ind_np, self.src_alph, self.dst_alph)
         self.accuracies.append((src_alph_score, dst_alph_score))
 
     def train(self):
@@ -173,9 +169,12 @@ if __name__ == '__main__':
     parser.add_argument('--breakacc', dest='breakacc', type=float, default=0.99,
                         help='accuracy of break')
     args = parser.parse_args()
-    ac = AdversarialCharacter(src_img_path=args.src_img_path, src_alph=args.src_alph, dst_alph=args.dst_alph,
-                              dst_path=args.dst_path, cxpb=args.cxpb, mutpb=args.mutpb,
-                              ngen=args.ngen, npop=args.npop, breakacc=args.breakacc)
+
+    lenet = LeNet(width=200, height=200, depth=1, classes=26, weight_path='./train_weights.hdf5')
+    ac = AdversarialCharacter(src_img_path=args.src_img_path, src_alph=args.src_alph, 
+                              dst_alph=args.dst_alph, dst_path=args.dst_path, 
+                              cxpb=args.cxpb, mutpb=args.mutpb, ngen=args.ngen, 
+                              npop=args.npop, breakacc=args.breakacc, model=lenet)
     ac.train()
     ac.make_animation()
 

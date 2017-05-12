@@ -164,9 +164,9 @@ if __name__ == '__main__':
                         help='crossover probability')
     parser.add_argument('--mutpb', dest='mutpb', type=float, default=0.2,
                         help='mutation probability')
-    parser.add_argument('--ngen', dest='ngen', type=int, default=1000,
+    parser.add_argument('--ngen', dest='ngen', type=int, default=100,
                         help='num of generation')
-    parser.add_argument('--npop', dest='npop', type=int, default=300,
+    parser.add_argument('--npop', dest='npop', type=int, default=100,
                         help='num of population')
     parser.add_argument('--breakacc', dest='breakacc', type=float, default=0.99,
                         help='accuracy of break')

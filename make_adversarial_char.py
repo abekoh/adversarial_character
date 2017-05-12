@@ -48,9 +48,6 @@ def make_adversarial_char():
     if not os.path.exists('./output'):
         os.mkdir('./output')
 
-    if not os.path.exists('./output/temp'):
-        os.mkdir('./output/temp')
-
     if not os.path.exists('./output/best'):
         os.mkdir('./output/best')
 
@@ -108,3 +105,4 @@ def make_adversarial_char():
 
 if __name__ == '__main__':
     make_adversarial_char()
+

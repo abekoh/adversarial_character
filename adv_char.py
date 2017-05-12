@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import os
 import random
@@ -56,6 +56,8 @@ class AdversarialCharacter():
     def __init__(self, src_img_path, src_alph, dst_alph, dst_path,
                  cxpb, mutpb, ngen, npop, breakacc):
         self.toolbox = Toolbox(src_img_path=src_img_path, src_alph=src_alph, dst_alph=dst_alph)
+        self.src_alph = src_alph
+        self.dst_alph = dst_alph
         self.dst_root_path = dst_path
         self.dst_best_path = os.path.join(self.dst_root_path, 'best')
         self.cxpb = cxpb
@@ -63,6 +65,7 @@ class AdversarialCharacter():
         self.ngen = ngen
         self.npop = npop
         self.breakacc = breakacc
+        self.accuracies = []
         self._make_dst_dir()
 
     def _make_dst_dir(self):
@@ -75,9 +78,9 @@ class AdversarialCharacter():
         img_pil = Image.fromarray(np.uint8(img_np))
         img_pil.save(os.path.join(self.dst_best_path, filename), 'PNG')
 
-    def _write_log(self, best_ind_np):
+    def _log_accuracies(self, best_ind_np):
         src_alph_score, dst_alph_score = self.toolbox.eval_char(best_ind_np, True)
-        print (src_alph_score, dst_alph_score)
+        self.accuracies.append((src_alph_score, dst_alph_score))
 
     def train(self):
         # 初期集団を生成
@@ -125,15 +128,28 @@ class AdversarialCharacter():
 
             best_ind_np = tools.selBest(self.pop, 1)[0]
             self._save_img(str(g) + '.png', best_ind_np)
-            self._write_log(best_ind_np)
+            self._log_accuracies(best_ind_np)
 
+            self.finish_g = g
             if max(fits) >= self.breakacc:
                 break
 
-    def make_animation(self):
-        fig = plt.figure()
-        img_paths = sorted(glob.glob(os.path.join(self.dst_best_path, '*.png')))
-        imgs = [np.array(Image.open(path)) for path in img_paths]
+    def make_animation(self, is_acc=True):
+        imgs = []
+        for i in range(self.finish_g):
+            path = os.path.join(self.dst_best_path, '{0}.png'.format(i))
+            img_char = Image.open(path)
+            if is_acc:
+                img = Image.new('RGB', (img_char.size[0], img_char.size[1] + 20), (255, 255, 255))
+                draw = ImageDraw.Draw(img)
+                font = ImageFont.truetype('/Library/Fonts/Arial.ttf', 18)
+                src_acc_text = '{0}: {1:06.2f}%'.format(self.src_alph, self.accuracies[i][0] * 100)
+                dst_acc_text = '{0}: {1:06.2f}%'.format(self.dst_alph, self.accuracies[i][1] * 100)
+                draw.text((5, img_char.size[1]), src_acc_text, font=font, fill='#000000')
+                draw.text((105, img_char.size[1]), dst_acc_text, font=font, fill='#000000')
+                img.paste(img_char, (0, 0))
+            img_np = np.array(img)
+            imgs.append(img_np)
         imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.1)
 
 
@@ -162,5 +178,5 @@ if __name__ == '__main__':
                               dst_path=args.dst_path, cxpb=args.cxpb, mutpb=args.mutpb,
                               ngen=args.ngen, npop=args.npop, breakacc=args.breakacc)
     ac.train()
-    # ac.make_animation()
+    ac.make_animation()
 

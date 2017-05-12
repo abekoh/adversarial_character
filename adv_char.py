@@ -45,7 +45,8 @@ class AdversarialCharacter():
     def __init__(self, src_img_path, dst_alph, dst_path,
                  cxpb, mutpb, ngen, npop, breakacc):
         self.toolbox = Toolbox(src_img_path=src_img_path, dst_alph=dst_alph)
-        self.dst_path = dst_path
+        self.dst_root_path = dst_path
+        self.dst_best_path = os.path.join(self.dst_root_path, 'best')
         self.cxpb = cxpb
         self.mutpb = mutpb
         self.ngen = ngen
@@ -54,14 +55,14 @@ class AdversarialCharacter():
         self._make_dst_dir()
 
     def _make_dst_dir(self):
-        if not os.path.exists(self.dst_path):
-            os.mkdir(self.dst_path)
-        if not os.path.exists(os.path.join(self.dst_path, 'best')):
-            os.mkdir(os.path.join(self.dst_path, 'best'))
+        if not os.path.exists(self.dst_root_path):
+            os.mkdir(self.dst_best_path)
+        if not os.path.exists(os.path.join(self.dst_best_path, 'best')):
+            os.mkdir(os.path.join(self.dst_best_path, 'best'))
 
-    def _save_img(self, img_np, dst_img_path):
+    def _save_img(self, filename, img_np):
         img_pil = Image.fromarray(np.uint8(img_np))
-        img_pil.save(dst_img_path, 'PNG')
+        img_pil.save(os.path.join(self.dst_best_path, filename), 'PNG')
 
     def train(self):
         # 初期集団を生成
@@ -108,7 +109,7 @@ class AdversarialCharacter():
             print ('Max: {0:013.10f} %'.format(max(fits) * 100))
 
             best_ind_np = tools.selBest(self.pop, 1)[0]
-            self._save_img(best_ind_np, os.path.join(self.dst_path, 'best', str(g) + '.png') )
+            self._save_img(str(g) + '.png', best_ind_np)
 
             if max(fits) >= self.breakacc:
                 break

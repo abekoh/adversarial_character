@@ -89,7 +89,7 @@ class AdversarialCharacter():
             ind.fitness.values = fit
 
         for g in range(self.ngen):
-            print ('{0}世代'.format(g))
+            print ('{0}世代'.format(g + 1))
 
             # 選択
             offspring = self.toolbox.select(self.pop, len(self.pop))
@@ -127,7 +127,7 @@ class AdversarialCharacter():
             self._save_img(str(g) + '.png', best_ind_np)
             self._log_accuracies(best_ind_np)
 
-            self.finish_g = g
+            self.finish_g = g + 1
             if max(fits) >= self.breakacc:
                 break
 
@@ -137,17 +137,19 @@ class AdversarialCharacter():
             path = os.path.join(self.dst_best_path, '{0}.png'.format(i))
             img_char = Image.open(path)
             if is_acc:
-                img = Image.new('RGB', (img_char.size[0], img_char.size[1] + 20), (255, 255, 255))
+                img = Image.new('RGB', (img_char.size[0], img_char.size[1] + 14), (255, 255, 255))
                 draw = ImageDraw.Draw(img)
-                font = ImageFont.truetype('/Library/Fonts/Arial.ttf', 18)
-                src_acc_text = '{0}: {1:06.2f}%'.format(self.src_alph, self.accuracies[i][0] * 100)
-                dst_acc_text = '{0}: {1:06.2f}%'.format(self.dst_alph, self.accuracies[i][1] * 100)
-                draw.text((5, img_char.size[1]), src_acc_text, font=font, fill='#000000')
-                draw.text((105, img_char.size[1]), dst_acc_text, font=font, fill='#000000')
+                font = ImageFont.truetype('/Library/Fonts/Arial.ttf', 14)
+                src_acc_text = '{0}:{1:06.2f}%'.format(self.src_alph, self.accuracies[i][0] * 100)
+                dst_acc_text = '{0}:{1:06.2f}%'.format(self.dst_alph, self.accuracies[i][1] * 100)
+                iter_text = '{0:03d}/{1:03d}'.format(i + 1, self.finish_g)
+                draw.text((0, img_char.size[1]), iter_text, font=font, fill='#000000')
+                draw.text((58, img_char.size[1]), src_acc_text, font=font, fill='#000000')
+                draw.text((130, img_char.size[1]), dst_acc_text, font=font, fill='#000000')
                 img.paste(img_char, (0, 0))
             img_np = np.array(img)
             imgs.append(img_np)
-        imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.1)
+        imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.5)
 
 
 if __name__ == '__main__':

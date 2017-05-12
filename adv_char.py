@@ -7,9 +7,6 @@ import argparse
 import imageio
 import glob
 
-from matplotlib import pyplot as plt
-from matplotlib import animation
-
 from deap import base
 from deap import creator
 from deap import tools

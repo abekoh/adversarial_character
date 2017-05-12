@@ -59,6 +59,10 @@ class AdversarialCharacter():
         if not os.path.exists(os.path.join(self.dst_path, 'best')):
             os.mkdir(os.path.join(self.dst_path, 'best'))
 
+    def _save_img(self, img_np, dst_img_path):
+        img_pil = Image.fromarray(np.uint8(img_np))
+        img_pil.save(dst_img_path, 'PNG')
+
     def train(self):
         # 初期集団を生成
         self.pop = self.toolbox.population(n=self.npop)
@@ -104,8 +108,7 @@ class AdversarialCharacter():
             print ('Max: {0:013.10f} %'.format(max(fits) * 100))
 
             best_ind_np = tools.selBest(self.pop, 1)[0]
-            best_ind_pil = Image.fromarray(np.uint8(best_ind_np))
-            best_ind_pil.save(os.path.join(self.dst_path, 'best', str(g) + '.png'), 'PNG')
+            self._save_img(best_ind_np, os.path.join(self.dst_path, 'best', str(g) + '.png') )
 
             if max(fits) >= self.breakacc:
                 break

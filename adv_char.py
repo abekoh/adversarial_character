@@ -4,16 +4,24 @@ import numpy as np
 import os
 import random
 import argparse
-import cnn
+import imageio
+import glob
+
+from matplotlib import pyplot as plt
+from matplotlib import animation
+
 from deap import base
 from deap import creator
 from deap import tools
 import deap_tools as extools
 
+import cnn
+
 class Toolbox(base.Toolbox):
-    def __init__(self, src_img_path, dst_alph, model_path='./train_weights.hdf5'):
+    def __init__(self, src_img_path, src_alph, dst_alph, model_path='./train_weights.hdf5'):
         super(Toolbox, self).__init__()
         self.src_img_path = src_img_path
+        self.src_alph = src_alph
         self.dst_alph = dst_alph
         self.model_path = model_path
         self._set()
@@ -24,9 +32,12 @@ class Toolbox(base.Toolbox):
         img_np.flags.writeable = True
         return img_np
 
-    def _eval_char(self, individual):
+    def eval_char(self, individual, is_src_alph=False):
         pred = cnn.get_likelihoods(img_np=individual, model=self.model)
         dst_alph_num = ord(self.dst_alph) - 65
+        if is_src_alph:
+            src_alph_num = ord(self.src_alph) - 65
+            return pred[src_alph_num], pred[dst_alph_num]
         return pred[dst_alph_num],
 
     def _set(self):
@@ -36,15 +47,15 @@ class Toolbox(base.Toolbox):
         self.register('individual', tools.initIterate, creator.Individual, self.attr_img)
         self.register('population', tools.initRepeat, list, self.individual)
         self.model = cnn.LeNet.build(width=200, height=200, depth=1, classes=26, weight_path=self.model_path)
-        self.register('evaluate', self._eval_char)
+        self.register('evaluate', self.eval_char)
         self.register('mate', extools.cxTwoPointImg)
         self.register('mutate', extools.mutFlipBitImg, indpb=0.05)
         self.register('select', tools.selTournament, tournsize=3)
 
 class AdversarialCharacter():
-    def __init__(self, src_img_path, dst_alph, dst_path,
+    def __init__(self, src_img_path, src_alph, dst_alph, dst_path,
                  cxpb, mutpb, ngen, npop, breakacc):
-        self.toolbox = Toolbox(src_img_path=src_img_path, dst_alph=dst_alph)
+        self.toolbox = Toolbox(src_img_path=src_img_path, src_alph=src_alph, dst_alph=dst_alph)
         self.dst_root_path = dst_path
         self.dst_best_path = os.path.join(self.dst_root_path, 'best')
         self.cxpb = cxpb
@@ -56,13 +67,17 @@ class AdversarialCharacter():
 
     def _make_dst_dir(self):
         if not os.path.exists(self.dst_root_path):
+            os.mkdir(self.dst_root_path)
+        if not os.path.exists(self.dst_best_path):
             os.mkdir(self.dst_best_path)
-        if not os.path.exists(os.path.join(self.dst_best_path, 'best')):
-            os.mkdir(os.path.join(self.dst_best_path, 'best'))
 
     def _save_img(self, filename, img_np):
         img_pil = Image.fromarray(np.uint8(img_np))
         img_pil.save(os.path.join(self.dst_best_path, filename), 'PNG')
+
+    def _write_log(self, best_ind_np):
+        src_alph_score, dst_alph_score = self.toolbox.eval_char(best_ind_np, True)
+        print (src_alph_score, dst_alph_score)
 
     def train(self):
         # 初期集団を生成
@@ -110,15 +125,24 @@ class AdversarialCharacter():
 
             best_ind_np = tools.selBest(self.pop, 1)[0]
             self._save_img(str(g) + '.png', best_ind_np)
+            self._write_log(best_ind_np)
 
             if max(fits) >= self.breakacc:
                 break
+
+    def make_animation(self):
+        fig = plt.figure()
+        img_paths = sorted(glob.glob(os.path.join(self.dst_best_path, '*.png')))
+        imgs = [np.array(Image.open(path)) for path in img_paths]
+        imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.1)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='make adversarial character')
     parser.add_argument('src_img_path', type=str,
                         help='source img path')
+    parser.add_argument('src_alph', type=str,
+                        help='source character')
     parser.add_argument('dst_alph', type=str,
                         help='destination character')
     parser.add_argument('-d', '--dst_path', dest='dst_path', type=str, default='output',
@@ -134,8 +158,9 @@ if __name__ == '__main__':
     parser.add_argument('--breakacc', dest='breakacc', type=float, default=0.99,
                         help='accuracy of break')
     args = parser.parse_args()
-    ac = AdversarialCharacter(src_img_path=args.src_img_path, dst_alph=args.dst_alph,
+    ac = AdversarialCharacter(src_img_path=args.src_img_path, src_alph=args.src_alph, dst_alph=args.dst_alph,
                               dst_path=args.dst_path, cxpb=args.cxpb, mutpb=args.mutpb,
                               ngen=args.ngen, npop=args.npop, breakacc=args.breakacc)
     ac.train()
+    # ac.make_animation()
 

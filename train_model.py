@@ -11,7 +11,7 @@ if __name__ == '__main__':
                         help='destination hdf5 path')
     parser.add_argument('-b', '--batch_size', dest='batch_size', type=int, default=128,
                         help='batch size')
-    parser.add_argument('-e', '--epoch', dest='nb_epoch', type=int, default=2,
+    parser.add_argument('-e', '--epoch', dest='nb_epoch', type=int, default=10,
                         help='num of epoch')
     args = parser.parse_args()
     lenet = LeNet(width=200, height=200, depth=1, classes=26)

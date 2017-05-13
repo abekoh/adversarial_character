@@ -144,4 +144,3 @@ class AdversarialCharacter():
             imgs.append(img_np)
         imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.5)
 
-

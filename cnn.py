@@ -11,23 +11,18 @@ from keras.layers.core import Flatten
 from keras.layers.core import Dense
 from keras.utils import np_utils
 
-# 参考:http://www.pyimagesearch.com/2016/08/01/lenet-convolutional-neural-network-in-python/
 class LeNet(Sequential):
     def __init__(self, width, height, depth, classes, weight_path=None):
         super(LeNet, self).__init__()
-        # first set of CONV => RELU => POOL
-        self.add(Convolution2D(20, 5, 5, border_mode='same', input_shape=(depth, height, width)))
+        self.add(Convolution2D(20, 5, 5, border_mode='same', input_shape=(height, width, depth)))
         self.add(Activation('relu'))
         self.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        # second set of CONV => RELU => POOL
         self.add(Convolution2D(50, 5, 5, border_mode='same'))
         self.add(Activation('relu'))
         self.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        # set of FC => RELU layers
         self.add(Flatten())
         self.add(Dense(500))
         self.add(Activation('relu'))
-        # softmax clasifier
         self.add(Dense(classes))
         self.add(Activation('softmax'))
         if weight_path is not None:
@@ -49,7 +44,6 @@ class LeNet(Sequential):
 
     def _filelist_to_list(self, filelist_path):
         imgs, labels = [], []
-        # 行数をゲット
         with open(filelist_path, 'r') as f:
             max_count = sum(1 for line in f)
         with open(filelist_path, 'r') as f:
@@ -63,14 +57,10 @@ class LeNet(Sequential):
                 img_np = img_np.astype(np.float32) / 255.0
                 imgs.append(img_np)
                 labels.append(int(readline_sp[1]))
-        print('converting into numpy format...')
         imgs = np.asarray(imgs)
         labels = np.asarray(labels)
-        print('reshaping...')
         imgs = imgs.reshape((imgs.shape[0], 200, 200))
-        print('adding new shape...')
-        imgs = imgs[:, np.newaxis, :, :]
-        print('converting 1-of-k format...')
+        imgs = imgs[:, :, :, np.newaxis]
         labels = np_utils.to_categorical(labels, 26)
         return imgs, labels
 

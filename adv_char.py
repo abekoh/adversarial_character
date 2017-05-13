@@ -22,6 +22,8 @@ class Toolbox(base.Toolbox):
 
     def _load_img_as_np(self, path):
         img_pil = Image.open(path)
+        if img_pil.size != (200, 200):
+            img_pil = img_pil.resize((200, 200))
         img_np = np.asarray(img_pil)
         img_np.flags.writeable = True
         return img_np

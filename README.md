@@ -28,7 +28,7 @@ pip install imageio
 ```
 
 ## Let's try!
-`git clone`して，Requirement揃えて，[こちら](https://drive.google.com/open?id=0B5V3_QYLLB2BSlo3OFZpQy1BZ1U)の学習済みモデルDLして，以下を実行．
+`git clone`して，Requirement揃えて，[こちら](https://drive.google.com/open?id=0B5V3_QYLLB2BSlo3OFZpQy1BZ1U)の学習済みモデルDLして同じディレクトリに置き，以下を実行．
 ```
 python make_adv_char.py sample_A.png A B
 ```

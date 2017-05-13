@@ -5,6 +5,7 @@ import os
 import random
 import imageio
 import glob
+import sys
 
 from deap import base
 from deap import creator
@@ -72,6 +73,14 @@ class AdversarialCharacter():
         src_alph_score, dst_alph_score = self.model.eval_char_with_before(best_ind_np, self.src_alph, self.dst_alph)
         self.accuracies.append((src_alph_score, dst_alph_score))
 
+    def _os_font_path(self):
+        if sys.platform == 'darwin':
+            return '/Library/Fonts/Arial.ttf'
+        if sys.platform == 'linux':
+            return '/usr/share/fonts/truetype/msttcorefonts/Arial.ttf'
+        if sys.platform == 'win32':
+            return 'C:\Windows\Fonts\arial.ttf'
+
     def train(self):
         # 初期集団を生成
         self.pop = self.toolbox.population(n=self.npop)
@@ -113,8 +122,8 @@ class AdversarialCharacter():
             # すべての適合度を配列にする
             fits = [ind.fitness.values[0] for ind in self.pop]
 
-            print ('Min: {0:013.10f} %'.format(min(fits) * 100))
             print ('Max: {0:013.10f} %'.format(max(fits) * 100))
+            print ('Min: {0:013.10f} %'.format(min(fits) * 100))
 
             best_ind_np = tools.selBest(self.pop, 1)[0]
             self._save_img(str(g) + '.png', best_ind_np)
@@ -132,7 +141,7 @@ class AdversarialCharacter():
             if is_acc:
                 img = Image.new('RGB', (img_char.size[0], img_char.size[1] + 14), (255, 255, 255))
                 draw = ImageDraw.Draw(img)
-                font = ImageFont.truetype('/Library/Fonts/Arial.ttf', 14)
+                font = ImageFont.truetype(self._os_font_path(), 14)
                 src_acc_text = '{0}:{1:06.2f}%'.format(self.src_alph, self.accuracies[i][0] * 100)
                 dst_acc_text = '{0}:{1:06.2f}%'.format(self.dst_alph, self.accuracies[i][1] * 100)
                 iter_text = '{0:03d}/{1:03d}'.format(i + 1, self.finish_g)
@@ -143,4 +152,5 @@ class AdversarialCharacter():
             img_np = np.array(img)
             imgs.append(img_np)
         imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.5)
+        print('made gif animation')
 

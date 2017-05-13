@@ -133,7 +133,7 @@ class AdversarialCharacter():
             if max(fits) >= self.breakacc:
                 break
 
-    def make_animation(self, is_acc=True):
+    def save_animation(self, is_acc=True):
         imgs = []
         for i in range(self.finish_g):
             path = os.path.join(self.dst_best_path, '{0}.png'.format(i))
@@ -152,5 +152,12 @@ class AdversarialCharacter():
             img_np = np.array(img)
             imgs.append(img_np)
         imageio.mimsave(os.path.join(self.dst_root_path, 'output.gif'), imgs, duration=0.5)
-        print('made gif animation')
+        print('save gif animation')
+
+    def save_log(self):
+        with open(os.path.join(self.dst_root_path, 'log.csv'), 'w') as log_file:
+            log_file.write('{0},{1}\n'.format(self.src_alph, self.dst_alph))
+            for i in range(self.finish_g):
+                log_file.write('{0:012.10f},{1:012.10f}\n'.format(self.accuracies[i][0], self.accuracies[i][1]))
+        print('save log')
 

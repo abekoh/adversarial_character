@@ -33,5 +33,6 @@ if __name__ == '__main__':
                               cxpb=args.cxpb, mutpb=args.mutpb, ngen=args.ngen, 
                               npop=args.npop, breakacc=args.breakacc, model=lenet)
     ac.train()
-    ac.make_animation()
+    ac.save_animation()
+    ac.save_log()
 

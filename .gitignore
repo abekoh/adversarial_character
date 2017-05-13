@@ -1,0 +1,8 @@
+*.hdf5
+*.pyc
+*.png
+*.gif
+*.mp4
+*.csv
+output/
+__pycache__/

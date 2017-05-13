@@ -30,13 +30,16 @@ pip install imageio
 ```
 python train_model.py {学習画像パス，ラベルのcsv} [options]
 ```
-*画像サイズは200x200の2値画像のみ利用可*
+
+**画像サイズは200x200の2値画像のみ利用可**
+
 |オプション|効果|
 |:-|:-|
 |`-t (--test) {テスト画像パス，ラベルのcsv}`|テストを行う場合|
 |`--hdf5`|モデルの保存パス(デフォルトでは'trained_weight.hdf5'|
 |`-b (--batch_size)`|バッチサイズ|
 |`-e (--epoch)`|学習回数|
+
 #### CSVについて
 1列目は画像パス，2列目はクラスID(Aから順に0,1,2...)
 ```
@@ -49,9 +52,11 @@ python train_model.py {学習画像パス，ラベルのcsv} [options]
 
 ### Make adversarial character
 AdversarialCharacter作成．
+
 ```
 python make_adv_char.py {加工前の文字画像} {加工前の文字のアルファベット} {騙す先のアルファベット} [options]
 ```
+
 |オプション|効果|
 |:-|:-|
 |`-d (--dst_path)`|保存先のパス(デフォルトでは'output')|

@@ -13,7 +13,7 @@ if __name__ == '__main__':
                         help='destination character')
     parser.add_argument('-d', '--dst_path', dest='dst_path', type=str, default='output',
                         help='destination path')
-    parser.add_argument('-t', '--trained_weights', dest='src_hdf5_path', type=str, default='./trained_weight.hdf5',
+    parser.add_argument('--hdf5', dest='src_hdf5_path', type=str, default='./trained_model.hdf5',
                         help='trained weight path')
     parser.add_argument('--cxpb', dest='cxpb', type=float, default=0.5,
                         help='crossover probability')

@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import os
 from PIL import Image
 from keras.models import Sequential
+from keras.optimizers import SGD
 from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.layers.core import Activation
 from keras.layers.core import Flatten
 from keras.layers.core import Dense
+from keras.utils import np_utils
 
 # 参考:http://www.pyimagesearch.com/2016/08/01/lenet-convolutional-neural-network-in-python/
 class LeNet(Sequential):
@@ -43,4 +46,45 @@ class LeNet(Sequential):
         src_alph_num = ord(src_alph) - 65
         dst_alph_num = ord(dst_alph) - 65
         return pred[src_alph_num], pred[dst_alph_num]
+
+    def _filelist_to_list(self, filelist_path):
+        imgs, labels = [], []
+        # 行数をゲット
+        with open(filelist_path, 'r') as f:
+            max_count = sum(1 for line in f)
+        with open(filelist_path, 'r') as f:
+            for count, readline in enumerate(f):
+                if count % 1000 == 0:
+                    print ('making list... ({0}/{1})'.format(count, max_count))
+                readline = readline.rstrip()
+                readline_sp = readline.split(',')
+                img_pil = Image.open(readline_sp[0])
+                img_np = np.asarray(img_pil)
+                img_np = img_np.astype(np.float32) / 255.0
+                imgs.append(img_np)
+                labels.append(int(readline_sp[1]))
+        print('converting into numpy format...')
+        imgs = np.asarray(imgs)
+        labels = np.asarray(labels)
+        print('reshaping...')
+        imgs = imgs.reshape((imgs.shape[0], 200, 200))
+        print('adding new shape...')
+        imgs = imgs[:, np.newaxis, :, :]
+        print('converting 1-of-k format...')
+        labels = np_utils.to_categorical(labels, 26)
+        return imgs, labels
+
+    def train(self, src_train_path, src_test_path=None, dst_hdf5_path='train_weight.hdf5'):
+        opt = SGD(lr=0.01)
+        train_imgs, train_labels = self._filelist_to_list(src_train_path)
+        self.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+        print('training...')
+        self.fit(train_imgs, train_labels, batch_size=128, nb_epoch=2, verbose=1)
+        if src_test_path:
+            print('testing...')
+            test_imgs, test_labels = self._filelist_to_list(src_test_path)
+            (loss, accuracy) = self.evaluate(test_imgs, test_labels, batch_size=128, verbose=1)
+            print('accuracy: {:.2f}%'.format(accuracy * 100))
+        self.save_weights(dst_hdf5_path, overwrite=True)
+
 

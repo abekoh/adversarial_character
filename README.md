@@ -79,3 +79,7 @@ python make_adv_char.py {加工前の文字画像} {加工前の文字のアル�
 |`--npop`|子孫の数|
 |`--breakacc`|打ち止めにする正解率|
 
+## References
+- [Intriguing properties of neural networks](https://arxiv.org/abs/1312.6199)
+- [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572)
+- [Deep Neural Networks are Easily Fooled: High Confidence Predictions for Unrecognizable Images](https://arxiv.org/abs/1412.1897)

@@ -1,5 +1,6 @@
 # adversarial_character
 CNNを騙す文字画像を遺伝的アルゴリズムで作成．
+%はそれぞれの文字と認識する確信度．
 
 ## Requirement
 - Python3 (3.5.3)
@@ -23,10 +24,18 @@ pip install h5py
 pip install imageio
 ```
 
+## Let's try!
+`git clone`して，Requirement揃えて，学習済みモデルDLして，以下を実行．
+```
+python make_adv_char.py imgs/sample_A.png A B
+```
+99%以上の確信度で騙す画像が生成されたら終了．
+outputに途中経過，gifアニメ，ログが保存される．
+
 ## How to use
 ### Train model
 マルチフォント文字認識器を学習しそのモデルを保存．
-6628種類のフォントで学習済みのモデルはこちら．
+6628種類のフォントで学習済み(テスト正解率90.17%)のモデルはこちら．
 ```
 python train_model.py {学習画像パス，ラベルのcsv} [options]
 ```
@@ -36,7 +45,7 @@ python train_model.py {学習画像パス，ラベルのcsv} [options]
 |オプション|効果|
 |:-|:-|
 |`-t (--test) {テスト画像パス，ラベルのcsv}`|テストを行う場合|
-|`--hdf5`|モデルの保存パス(デフォルトでは'trained_weight.hdf5')|
+|`--hdf5`|モデルの保存パス(デフォルトでは'trained_model.hdf5')|
 |`-b (--batch_size)`|バッチサイズ|
 |`-e (--epoch)`|学習回数|
 
@@ -60,7 +69,7 @@ python make_adv_char.py {加工前の文字画像} {加工前の文字のアル�
 |オプション|効果|
 |:-|:-|
 |`-d (--dst_path)`|保存先のパス(デフォルトでは'output')|
-|`--hdf5`|学習済みモデルのパス(デフォルトでは'trained_weight.hdf5')|
+|`--hdf5`|学習済みモデルのパス(デフォルトでは'trained_model.hdf5')|
 |`--cxpb`|交叉が起こる確率|
 |`--mutpb`|突然変異が起こる確率|
 |`--ngen`|進化の最大回数|

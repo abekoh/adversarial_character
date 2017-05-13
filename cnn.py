@@ -31,7 +31,7 @@ class LeNet(Sequential):
     def get_likelihoods(self, img_np):
         img_cnn = img_np.copy()
         img_cnn = img_cnn.astype(np.float32) / 255.0
-        img_cnn = img_cnn[np.newaxis, np.newaxis, :, :]
+        img_cnn = img_cnn[np.newaxis, :, :, np.newaxis]
         pred = self.predict(img_cnn, batch_size=128, verbose=0)
         likelihoods = pred[0]
         return likelihoods
@@ -49,7 +49,7 @@ class LeNet(Sequential):
         with open(filelist_path, 'r') as f:
             for count, readline in enumerate(f):
                 if count % 1000 == 0:
-                    print ('making list... ({0}/{1})'.format(count, max_count))
+                    print('making list... ({0}/{1})'.format(count, max_count))
                 readline = readline.rstrip()
                 readline_sp = readline.split(',')
                 img_pil = Image.open(readline_sp[0])
@@ -57,6 +57,7 @@ class LeNet(Sequential):
                 img_np = img_np.astype(np.float32) / 255.0
                 imgs.append(img_np)
                 labels.append(int(readline_sp[1]))
+        print('reshaping images...')
         imgs = np.asarray(imgs)
         labels = np.asarray(labels)
         imgs = imgs.reshape((imgs.shape[0], 200, 200))
@@ -64,17 +65,17 @@ class LeNet(Sequential):
         labels = np_utils.to_categorical(labels, 26)
         return imgs, labels
 
-    def train(self, src_train_path, src_test_path=None, dst_hdf5_path='train_weight.hdf5'):
+    def train(self, src_train_path, src_test_path=None, dst_hdf5_path='train_weight.hdf5', batch_size=128, nb_epoch=2):
         opt = SGD(lr=0.01)
         train_imgs, train_labels = self._filelist_to_list(src_train_path)
         self.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
         print('training...')
-        self.fit(train_imgs, train_labels, batch_size=128, nb_epoch=2, verbose=1)
+        self.fit(train_imgs, train_labels, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1)
         if src_test_path:
             print('testing...')
             test_imgs, test_labels = self._filelist_to_list(src_test_path)
-            (loss, accuracy) = self.evaluate(test_imgs, test_labels, batch_size=128, verbose=1)
+            (loss, accuracy) = self.evaluate(test_imgs, test_labels, batch_size=batch_size, verbose=1)
             print('accuracy: {:.2f}%'.format(accuracy * 100))
         self.save_weights(dst_hdf5_path, overwrite=True)
-
+        print('saved ' + dst_hdf5_path)
 

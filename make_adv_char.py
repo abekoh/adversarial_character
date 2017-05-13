@@ -13,6 +13,8 @@ if __name__ == '__main__':
                         help='destination character')
     parser.add_argument('-d', '--dst_path', dest='dst_path', type=str, default='output',
                         help='destination path')
+    parser.add_argument('-t', '--trained_weights', dest='src_hdf5_path', type=str, default='./trained_weight.hdf5',
+                        help='trained weight path')
     parser.add_argument('--cxpb', dest='cxpb', type=float, default=0.5,
                         help='crossover probability')
     parser.add_argument('--mutpb', dest='mutpb', type=float, default=0.2,
@@ -25,7 +27,7 @@ if __name__ == '__main__':
                         help='accuracy of break')
     args = parser.parse_args()
 
-    lenet = LeNet(width=200, height=200, depth=1, classes=26, weight_path='./train_weights.hdf5')
+    lenet = LeNet(width=200, height=200, depth=1, classes=26, weight_path=args.src_hdf5_path)
     ac = AdversarialCharacter(src_img_path=args.src_img_path, src_alph=args.src_alph, 
                               dst_alph=args.dst_alph, dst_path=args.dst_path, 
                               cxpb=args.cxpb, mutpb=args.mutpb, ngen=args.ngen, 

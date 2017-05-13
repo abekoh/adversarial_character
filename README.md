@@ -1,5 +1,6 @@
 # adversarial_character
 CNNを騙す文字画像を遺伝的アルゴリズムで作成．
+![AtoB](https://cloud.githubusercontent.com/assets/20609790/26024576/f64ff666-380e-11e7-9aed-c6bb10ad3caf.gif)
 %はそれぞれの文字と認識する確信度．
 
 ## Requirement
@@ -25,7 +26,7 @@ pip install imageio
 ```
 
 ## Let's try!
-`git clone`して，Requirement揃えて，学習済みモデルDLして，以下を実行．
+`git clone`して，Requirement揃えて，[こちら](https://drive.google.com/open?id=0B5V3_QYLLB2BSlo3OFZpQy1BZ1U)の学習済みモデルDLして，以下を実行．
 ```
 python make_adv_char.py imgs/sample_A.png A B
 ```
@@ -35,7 +36,7 @@ outputに途中経過，gifアニメ，ログが保存される．
 ## How to use
 ### Train model
 マルチフォント文字認識器を学習しそのモデルを保存．
-6628種類のフォントで学習済み(テスト正解率90.17%)のモデルはこちら．
+6628種類のフォントで学習済み(テスト正解率90.17%)のモデルは[こちら](https://drive.google.com/open?id=0B5V3_QYLLB2BSlo3OFZpQy1BZ1U)．
 ```
 python train_model.py {学習画像パス，ラベルのcsv} [options]
 ```
